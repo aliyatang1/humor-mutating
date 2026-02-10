@@ -1,21 +1,12 @@
 import ImageCard from "./ImageCard";
-import { createClient } from "@supabase/supabase-js";
-
-console.log("Connecting to:", process.env.SUPABASE_URL);
-
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  global: {
-    fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
-  },
-});
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function GalleryPage() {
+  const supabase = createSupabaseServerClient();
+
   const { data: images, error } = await supabase
     .from("images")
     .select(`
@@ -40,42 +31,27 @@ export default async function GalleryPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10">
-      {/* PAGE CONTAINER */}
       <div className="mx-auto max-w-6xl">
-        
-        {/* 🔹 HEADER */}
         <header className="mb-12 text-center">
           <h1 className="text-5xl font-black tracking-tight text-slate-900">
             HUMOR FEED
           </h1>
-
           <p className="mt-3 text-base text-slate-500">
             The internet’s quiet thoughts, out loud.
           </p>
-
           <div className="mt-6 flex justify-center">
             <div className="h-[2px] w-16 rounded-full bg-slate-200" />
           </div>
         </header>
 
-        {/* 🔹 GRID FEED */}
         {images && images.length > 0 ? (
-          <div
-            className="
-              grid gap-6
-              grid-cols-1
-              sm:grid-cols-2
-              lg:grid-cols-3
-            "
-          >
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {images.map((image) => (
               <ImageCard key={image.id} image={image as any} />
             ))}
           </div>
         ) : (
-          <p className="text-center text-slate-500">
-            No public images available.
-          </p>
+          <p className="text-center text-slate-500">No public images available.</p>
         )}
       </div>
     </main>
